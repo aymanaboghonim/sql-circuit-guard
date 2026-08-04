@@ -1,0 +1,93 @@
+# ==============================================================================
+# SQL-CIRCUIT-GUARD: Production Pre-Commit Pipeline Specification
+# ==============================================================================
+# Domain Scope: Deterministic Read-Only Text-to-SQL Engine (Python 3.12+ / SQLGlot / LiteLLM)
+# Execution Philosophy: Shift-Left Quality Gate enforcing formatting, static typing,
+#                       secret leak prevention, Docker safety, and CI/CD validity.
+# Tooling Policy: 100% Rust-native & high-speed modern stack. ZERO legacy tools.
+# ==============================================================================
+
+default_language_version:
+  python: python3.12
+
+default_stages: [pre-commit]
+
+repos:
+  # ----------------------------------------------------------------------------
+  # 1. REPOSITORY HYGIENE & FILE INTEGRITY
+  # Prevents malformed syntax, broken merge markers, and model weight commits.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-yaml
+      - id: check-json
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+        # Blocks accidental commits of local GGUF/LLM weights (>50MB) or raw DB backups
+        args: ['--maxkb=50000']
+
+  # ----------------------------------------------------------------------------
+  # 2. ULTRA-FAST PYTHON LINTING & FORMATTING (RUFF)
+  # Rust-native engine replacing Flake8, Black, Isort, Autoflake, & Pyupgrade.
+  # Checks ALL Python files repository-wide by default.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.1
+    hooks:
+      - id: ruff-check
+        name: ruff-linter
+        args: [--fix, --exit-non-zero-on-fix]
+      - id: ruff-format
+        name: ruff-formatter
+
+  # ----------------------------------------------------------------------------
+  # 3. STRICT STATIC TYPE CHECKING (MYPY + PYDANTIC V2 + SQLGLOT)
+  # Validates Pydantic v2 schemas across state machines, AST guardrails, and APIs.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v2.3.0
+    hooks:
+      - id: mypy
+        name: mypy-type-checker
+        additional_dependencies:
+          - pydantic>=2.10.0
+          - pydantic-settings>=2.7.0
+          - sqlglot>=25.0.0
+          - httpx
+        args: [--strict, --config-file=pyproject.toml]
+        files: ^src/
+
+  # ----------------------------------------------------------------------------
+  # 4. SECRET LEAK PREVENTION (GITLEAKS)
+  # Scans staged commits for hardcoded API keys (Gemini AI Studio, Groq), & tokens.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.2
+    hooks:
+      - id: gitleaks
+
+  # ----------------------------------------------------------------------------
+  # 5. DOCKERFILE LINTING (HADOLINT)
+  # Enforces multi-stage container security across ALL Dockerfiles in the repo.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/hadolint/hadolint
+    rev: v2.15.0
+    hooks:
+      - id: hadolint
+        name: hadolint-docker
+        types: [dockerfile]
+
+  # ----------------------------------------------------------------------------
+  # 6. GITHUB ACTIONS CI/CD LINTING (ACTIONLINT)
+  # Validates runner labels, YAML syntax, and prevents script injection risks.
+  # ----------------------------------------------------------------------------
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+        name: actionlint-github-workflows
+        files: ^\.github/workflows/

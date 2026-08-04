@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Databases & local state
+*.db
+*.sqlite3
+data/chinook.db
+data/cache/
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & Editor
+.vscode/*
+!.vscode/settings.json
+.idea/
+
+# Observability local cache
+.langfuse/

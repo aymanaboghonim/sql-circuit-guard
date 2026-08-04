@@ -1,0 +1,29 @@
+[project]
+name = "sql-circuit-guard"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "Ayman Aboghonim", email = "aymanaboghonim@gmail.com" }
+]
+requires-python = ">=3.12"
+dependencies = [
+    "instructor>=1.15.4",
+    "litellm>=1.95.0",
+    "pydantic>=2.13.4",
+    "pytest>=9.1.1",
+    "ruff>=0.16.1",
+    "sqlglot>=30.14.0",
+]
+
+[project.scripts]
+sql-circuit-guard = "sql_circuit_guard:main"
+
+[build-system]
+requires = ["uv_build>=0.12.1,<0.13.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.1",
+]
