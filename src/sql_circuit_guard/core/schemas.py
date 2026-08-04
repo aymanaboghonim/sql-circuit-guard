@@ -79,3 +79,32 @@ class ExecutionResult(BaseModel):
         default=None,
         description="Database driver error string if execution failed.",
     )
+
+
+class CircuitExecutionResult(BaseModel):
+    """Full trace and outcome of the self-correcting text-to-SQL circuit."""
+
+    model_config = ConfigDict(frozen=True)
+
+    success: bool = Field(
+        ..., description="True if query eventually passed AST and executed."
+    )
+    final_sql: str = Field(default="", description="The final executed SQL query.")
+    reasoning: str = Field(
+        default="", description="LLM architectural reasoning for the final query."
+    )
+    attempts_used: int = Field(
+        default=0, description="Number of LLM generation attempts consumed."
+    )
+    execution_result: ExecutionResult | None = Field(
+        default=None,
+        description="Final SQLite tabular execution result.",
+    )
+    ast_validation: ASTValidationResult | None = Field(
+        default=None,
+        description="Final AST validation outcome.",
+    )
+    error_trail: list[str] = Field(
+        default_factory=list,
+        description="Chronological log of AST/DB errors encountered during retries.",
+    )
