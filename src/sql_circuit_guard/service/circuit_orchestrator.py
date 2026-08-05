@@ -1,5 +1,7 @@
 """Self-correcting orchestrator circuit combining Gateway, AST Guardrail, and DB Executor."""
 
+from langfuse import observe  # type: ignore[import-not-found]
+
 from sql_circuit_guard.core.schemas import (
     ASTValidationResult,
     CircuitExecutionResult,
@@ -28,17 +30,17 @@ class CircuitOrchestrationEngine:
         self.ast_guard = ast_guard or ASTGuardrail(dialect="sqlite")
         self._cached_schema: str | None = None
 
+    @observe(name="sql_circuit_execution", as_type="chain")  # type: ignore[untyped-decorator]
     def execute_circuit(self, request: QueryRequest) -> CircuitExecutionResult:
-        """Execute the self-correcting Text-to-SQL generation and validation circuit.
-
-        Args:
-            request: Typed natural language query request with retry bounds.
-
-        Returns:
-            CircuitExecutionResult: Typed outcome containing SQL, attempts, and tabular data.
-        """
+        """Execute the self-correcting Text-to-SQL generation and validation circuit."""
         if self._cached_schema is None:
             self._cached_schema = self.schema_inspector.get_schema_ddl()
+
+        # Tag root trace with query properties
+        # update_trace_metadata(
+        #     tags=["text-to-sql", "sqlite-chinook"],
+        #     metadata={"max_retries": request.max_retries, "initial_query": request.query},
+        # )
 
         current_prompt = request.query
         error_trail: list[str] = []

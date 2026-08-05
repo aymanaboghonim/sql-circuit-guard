@@ -1,6 +1,6 @@
 """Decoupled LLM Gateway utilizing LiteLLM and Instructor for structured generation."""
 
-from typing import Protocol, TypeVar
+from typing import Any, Protocol, TypeVar
 
 import instructor  # type: ignore
 from litellm import completion  # type: ignore
@@ -53,7 +53,7 @@ class LiteLLMGateway:
             f"\n\nDATABASE SCHEMA:\n{schema_context}"
         )
 
-        messages = [
+        messages: list[Any] = [
             {"role": "system", "content": system_instruction},
             {"role": "user", "content": prompt},
         ]
