@@ -48,9 +48,9 @@ graph TD
 
 ## 🎥 Live Demo & Multi-Query Walkthrough
 
-<video src="assets/demo_e2e.mp4" width="100%" controls autoplay loop muted></video>
+## 🎥 Live Demo & Multi-Query Walkthrough
 
-*The complete end-to-end demo shows running multiple natural language queries (Top 5 Artists, Top 10 Invoices, Track Counts per Genre), real-time circuit diagnostics & AST validation, and database schema exploration.*
+![Live Demo & Multi-Query Walkthrough](assets/demo_e2e.gif)
 
 ---
 
