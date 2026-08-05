@@ -33,6 +33,27 @@ graph TD
 
 ---
 
+## User Interface & API Integration
+
+- **Interactive Gradio Web App (`src/app.py`)**:
+  - Dual-panel modern design with real-time execution results, formatted SQL blocks, architectural reasoning, and circuit telemetry diagnostics.
+  - Quick-click sample prompts for immediate testing.
+  - Interactive **Database Schema Explorer** tab to inspect tables (`Artist`, `Album`, `Track`, `Invoice`, etc.) and columns.
+  - Dynamic **Langfuse Tracing Toggle** allowing users to enable or disable observability in real time.
+- **Robust Integration Testing**:
+  - Comprehensive unit test suite covering AST guardrails, circuit loops, database execution, LLM gateway, and telemetry.
+  - API integration tests (`tests/test_api_service.py`) ensuring schema inspectors and database executors operate correctly.
+
+---
+
+## 🎥 Live Demo & Multi-Query Walkthrough
+
+<video src="assets/demo_e2e.mp4" width="100%" controls autoplay loop muted></video>
+
+*The complete end-to-end demo shows running multiple natural language queries (Top 5 Artists, Top 10 Invoices, Track Counts per Genre), real-time circuit diagnostics & AST validation, and database schema exploration.*
+
+---
+
 ## Core Components
 - **`guardrails/ast_guard.py`**: Deterministic AST parser (`sqlglot`) ensuring single-statement read-only `SELECT` queries and blocking DDL/DML mutations.
 - **`db/executor.py`**: SQLite database executor operating in strict read-only URI mode (`mode=ro`).

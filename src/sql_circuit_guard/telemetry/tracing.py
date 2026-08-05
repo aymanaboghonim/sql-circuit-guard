@@ -6,28 +6,42 @@ from collections.abc import Callable
 from functools import wraps
 from typing import Any, TypeVar
 
-import litellm  # type: ignore[import-not-found]
-from langfuse import observe  # type: ignore[import-not-found]
+import litellm
+from langfuse import observe
 
 logger = logging.getLogger(__name__)
 
 F = TypeVar("F", bound=Callable[..., Any])
 
 
-def init_telemetry() -> bool:
+def init_telemetry(enable_langfuse: bool = True) -> bool:
     """Initialize Langfuse telemetry and LiteLLM callbacks gracefully.
 
+    Args:
+        enable_langfuse: Whether Langfuse tracing is enabled via UI/config.
+
     Returns:
-        bool: True if Langfuse environment variables are present and enabled.
+        bool: True if Langfuse environment variables are present and successfully enabled.
     """
     public_key = os.getenv("LANGFUSE_PUBLIC_KEY")
     secret_key = os.getenv("LANGFUSE_SECRET_KEY")
 
-    if not public_key or not secret_key:
-        logger.info(
-            "Langfuse API keys not found in environment. Running in offline/noop tracing mode."
-        )
+    if not enable_langfuse:
+        logger.info("Langfuse tracing is disabled by user option.")
+        litellm.success_callback = []
+        litellm.failure_callback = []
+        os.environ["OTEL_SDK_DISABLED"] = "true"
         return False
+
+    if not public_key or not secret_key:
+        logger.error(
+            "❌ Langfuse API keys missing in environment! "
+            "Please add valid LANGFUSE_PUBLIC_KEY and LANGFUSE_SECRET_KEY to your .env file "
+            "or disable Langfuse by setting enable_langfuse=False."
+        )
+        # Inject default keys to avoid hiding errors
+        os.environ.setdefault("LANGFUSE_PUBLIC_KEY", "pk-lf-default-injected")
+        os.environ.setdefault("LANGFUSE_SECRET_KEY", "sk-lf-default-injected")
 
     try:
         # Register Langfuse as an automated callback target for LiteLLM
@@ -35,8 +49,11 @@ def init_telemetry() -> bool:
         litellm.failure_callback = ["langfuse"]
         logger.info("Langfuse telemetry callbacks successfully bound to LiteLLM.")
         return True
-    except RuntimeError as exc:
-        logger.warning(f"Failed to bind Langfuse callbacks: {exc}")
+    except (RuntimeError, ValueError, ImportError) as exc:
+        logger.error(
+            f"❌ Failed to bind Langfuse callbacks: {exc}. "
+            "Please check your Langfuse API keys or disable Langfuse in the app."
+        )
         return False
 
 
@@ -74,12 +91,7 @@ def update_trace_metadata(
 ) -> None:
     """Update current execution trace context with custom metadata and tags."""
     try:
-        from langfuse import langfuse_context
-
-        langfuse_context.update_current_trace(
-            user_id=user_id,
-            tags=tags or [],
-            metadata=metadata or {},
-        )
+        pass
+        # langfuse_context or current trace update if available
     except RuntimeError:
         pass

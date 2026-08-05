@@ -2,9 +2,16 @@
 
 from typing import Any, Protocol, TypeVar
 
-import instructor  # type: ignore
-from litellm import completion  # type: ignore
+import instructor
+import langfuse
+from litellm import completion
 from pydantic import BaseModel
+
+# Patch langfuse version attribute if missing
+if not hasattr(langfuse, "version"):
+    import langfuse._version as version
+
+    langfuse.version = version
 
 from sql_circuit_guard.core.schemas import SQLGenerationOutput
 from sql_circuit_guard.gateway.rate_limiter import GateRateLimiter
@@ -80,8 +87,8 @@ class LiteLLMGateway:
         self, model_name: str, messages: list[dict[str, str]]
     ) -> SQLGenerationOutput:
         """Invoke Instructor schema-validated completion."""
-        # Convert messages to the expected format
-        formatted_messages = [
+        # Convert messages to the expected format with explicit typing
+        formatted_messages: list[Any] = [
             {"role": "system", "content": messages[0]["content"]},
             {"role": "user", "content": messages[1]["content"]},
         ]

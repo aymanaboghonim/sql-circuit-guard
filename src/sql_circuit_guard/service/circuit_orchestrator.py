@@ -1,6 +1,6 @@
 """Self-correcting orchestrator circuit combining Gateway, AST Guardrail, and DB Executor."""
 
-from langfuse import observe  # type: ignore[import-not-found]
+from langfuse import observe
 
 from sql_circuit_guard.core.schemas import (
     ASTValidationResult,

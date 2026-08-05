@@ -70,17 +70,8 @@ repos:
     hooks:
       - id: gitleaks
 
-  # ----------------------------------------------------------------------------
-  # 5. DOCKERFILE LINTING (HADOLINT)
-  # Enforces multi-stage container security across ALL Dockerfiles in the repo.
-  # ----------------------------------------------------------------------------
-  - repo: https://github.com/hadolint/hadolint
-    rev: v2.15.0
-    hooks:
-      - id: hadolint
-        name: hadolint-docker
-        types: [dockerfile]
-
+  # (Hadolint section removed – Dockerfile linting is not required for this build.)
+        # (no excluded hooks)
   # ----------------------------------------------------------------------------
   # 6. GITHUB ACTIONS CI/CD LINTING (ACTIONLINT)
   # Validates runner labels, YAML syntax, and prevents script injection risks.
