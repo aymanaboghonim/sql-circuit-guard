@@ -19,23 +19,21 @@ graph TD
     User["User Natural Language Query"] --> Orchestrator["Circuit Orchestrator"]
     Orchestrator --> Gateway["LiteLLM Gateway (Ollama / Cloud Fallback)"]
     Gateway --> ASTGuard["sqlglot AST Guardrail"]
-    ASTGuard -->|Invalid / Unsafe AST| Feedback["Self-Correction Loop (Max N=2)"]
-    Feedback --> Gateway
+
+    ASTGuard -->|Invalid / Unsafe AST| Loop["Self-Correction Loop (Max N=2)"]
+    Loop --> Gateway
+
     ASTGuard -->|Valid SELECT Only| DB["SQLite Read-Only Executor"]
     DB --> Output["Structured Pydantic Result"]
 
-    subgraph Observability
-        Orchestrator -.-> Langfuse["OpenTelemetry / Langfuse Tracing"]
-        Gateway -.-> Langfuse
-        ASTGuard -.-> Langfuse
-    end
+    Orchestrator -.-> Tracing["OpenTelemetry / Langfuse Tracing"]
+    Gateway -.-> Tracing
+    ASTGuard -.-> Tracing
 ```
 
 ---
 
 ## Core Components
-
-- **`core/schemas.py`**: Pydantic v2 data contracts (`QueryRequest`, `SQLGenerationOutput`, `ASTValidationResult`, `ExecutionResult`, `CircuitExecutionResult`).
 - **`guardrails/ast_guard.py`**: Deterministic AST parser (`sqlglot`) ensuring single-statement read-only `SELECT` queries and blocking DDL/DML mutations.
 - **`db/executor.py`**: SQLite database executor operating in strict read-only URI mode (`mode=ro`).
 - **`db/schema_inspector.py`**: Extracts table schemas and DDL definitions for reliable LLM grounding.
