@@ -96,21 +96,34 @@ def run_query_circuit(
         df = pd.DataFrame()
 
     # Panel 2: Telemetry & Circuit Diagnostics
-    status_badge = (
-        "🟢 **SUCCESS (AST & DB Validated)**"
-        if result.success
-        else "🔴 **CIRCUIT EXHAUSTED**"
-    )
+    if result.success:
+        status_badge = "🟢 **SUCCESS (AST & DB Validated)**"
+    elif result.attempts_used == 0 and result.error_trail:
+        # Deterministic guardrail hard-stop (PromptGuard runs pre-LLM,
+        # consuming zero generation attempts).
+        status_badge = "🛡️ **BLOCKED (Deterministic Guardrail)**"
+    else:
+        status_badge = "🔴 **CIRCUIT EXHAUSTED**"
     latency_ms = (
         result.execution_result.execution_time_ms if result.execution_result else 0.0
     )
+
+    # Identify which guardrail (if any) blocked the query for the telemetry panel
+    if result.ast_validation and not result.ast_validation.is_valid:
+        guardrail_status = f"BLOCKED ({result.ast_validation.violated_rule})"
+    elif not result.success and result.attempts_used == 0:
+        guardrail_status = "BLOCKED (Prompt Guard)"
+    elif result.success:
+        guardrail_status = "PASSED"
+    else:
+        guardrail_status = "N/A"
 
     telemetry_md = (
         f"### Circuit Diagnostics\n"
         f"- **Status**: {status_badge}\n"
         f"- **Attempts Consumed**: `{result.attempts_used} / {int(max_retries) + 1}`\n"
         f"- **DB Execution Latency**: `{latency_ms:.2f} ms`\n"
-        f"- **AST Guardrail**: `{'PASSED' if result.ast_validation and result.ast_validation.is_valid else 'BLOCKED'}`"
+        f"- **Guardrail**: `{guardrail_status}`"
     )
 
     if result.error_trail:
