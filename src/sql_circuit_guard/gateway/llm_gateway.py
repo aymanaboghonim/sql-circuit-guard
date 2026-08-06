@@ -8,10 +8,10 @@ from litellm import completion
 from pydantic import BaseModel
 
 # Patch langfuse version attribute if missing
-if not hasattr(langfuse, "version"):
+if getattr(langfuse, "version", None) is None:
     import langfuse._version as version
 
-    langfuse.version = version
+    langfuse.version = version  # type: ignore[attr-defined]
 
 from sql_circuit_guard.core.schemas import SQLGenerationOutput
 from sql_circuit_guard.gateway.rate_limiter import GateRateLimiter

@@ -30,3 +30,7 @@ build-backend = "uv_build"
 
 [tool.mypy]
 ignore_missing_imports = true
+# mypy runs in two environments (project venv + pre-commit isolated hook env)
+# whose transitive dependency resolution differs, making "unused-ignore"
+# warnings unreliable. Kept off to allow identical results in both.
+disable_error_code = ["unused-ignore"]

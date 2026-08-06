@@ -12,10 +12,21 @@ from sql_circuit_guard.db.executor import SQLiteExecutor
 from sql_circuit_guard.db.schema_inspector import SQLiteSchemaInspector
 from sql_circuit_guard.gateway.llm_gateway import BaseLLMGateway
 from sql_circuit_guard.guardrails.ast_guard import ASTGuardrail
+from sql_circuit_guard.guardrails.prompt_guard import PromptGuard
 
 
 class CircuitOrchestrationEngine:
     """Orchestrates Text-to-SQL generation with AST verification and self-correction loops."""
+
+    # Security-class violations terminate the circuit immediately.
+    # Soft failures (DB execution errors) are the only retryable class.
+    SECURITY_VIOLATION_RULES: frozenset[str] = frozenset(
+        {
+            "MUTATION_BLOCKED",
+            "NON_SELECT_ROOT_BLOCKED",
+            "MULTI_STATEMENT_BLOCKED",
+        }
+    )
 
     def __init__(
         self,
@@ -23,16 +34,40 @@ class CircuitOrchestrationEngine:
         db_executor: SQLiteExecutor,
         schema_inspector: SQLiteSchemaInspector,
         ast_guard: ASTGuardrail | None = None,
+        prompt_guard: PromptGuard | None = None,
     ) -> None:
         self.gateway = gateway
         self.db_executor = db_executor
         self.schema_inspector = schema_inspector
         self.ast_guard = ast_guard or ASTGuardrail(dialect="sqlite")
+        self.prompt_guard = prompt_guard or PromptGuard()
         self._cached_schema: str | None = None
 
     @observe(name="sql_circuit_execution", as_type="chain")  # type: ignore[untyped-decorator]
     def execute_circuit(self, request: QueryRequest) -> CircuitExecutionResult:
-        """Execute the self-correcting Text-to-SQL generation and validation circuit."""
+        """Execute the self-correcting Text-to-SQL generation and validation circuit.
+
+        Deterministic prompt-level injection screening runs BEFORE any LLM call.
+        Security-class AST violations (mutation, non-SELECT root, multi-statement)
+        hard-stop the circuit without triggering self-correction retries. Only
+        soft database execution errors are fed back into the bounded retry loop.
+        """
+        # Step 0: Deterministic prompt-level injection screening (untrusted input)
+        prompt_result = self.prompt_guard.validate(request.query)
+        if not prompt_result.is_valid:
+            error_msg = (
+                f"Prompt Guard Blocked -> Rule: {prompt_result.violated_rule} | "
+                f"Error: {prompt_result.error_message}"
+            )
+            return CircuitExecutionResult(
+                success=False,
+                final_sql="",
+                reasoning="",
+                attempts_used=0,
+                ast_validation=None,
+                error_trail=[error_msg],
+            )
+
         if self._cached_schema is None:
             self._cached_schema = self.schema_inspector.get_schema_ddl()
 
@@ -74,6 +109,18 @@ class CircuitOrchestrationEngine:
                     f"Rule: {ast_result.violated_rule} | Error: {ast_result.error_message}"
                 )
                 error_trail.append(error_msg)
+
+                # Security-class violations hard-stop the circuit: no retry loop
+                # (prevents attempt exhaustion and adversarial query laundering).
+                if ast_result.violated_rule in self.SECURITY_VIOLATION_RULES:
+                    return CircuitExecutionResult(
+                        success=False,
+                        final_sql=generation.sql_query,
+                        reasoning=generation.reasoning,
+                        attempts_used=attempt,
+                        ast_validation=ast_result,
+                        error_trail=error_trail,
+                    )
 
                 # Feed AST failure back into prompt for correction
                 current_prompt = self._format_retry_prompt(

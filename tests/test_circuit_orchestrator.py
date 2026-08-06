@@ -68,10 +68,10 @@ def test_first_attempt_success(
     assert len(result.execution_result.rows) == 2
 
 
-def test_ast_violation_recovery(
+def test_ast_violation_hard_stop(
     db_tools: tuple[SQLiteExecutor, SQLiteSchemaInspector],
 ) -> None:
-    """Verify circuit intercepts UPDATE mutation and corrects on attempt 2."""
+    """Verify security-class AST violations terminate immediately without retries."""
     executor, inspector = db_tools
     mock_gateway = MockLLMGateway(
         responses=[
@@ -95,13 +95,41 @@ def test_ast_violation_recovery(
     request = QueryRequest(query="Get one artist after attempting mutation.")
     result = orchestrator.execute_circuit(request)
 
-    assert result.success is True
-    assert result.attempts_used == 2
+    # Security-class violation: hard stop, NO self-correction retry loop
+    assert result.success is False
+    assert result.attempts_used == 1
     assert len(result.error_trail) == 1
     assert "AST Guardrail Blocked" in result.error_trail[0]
     assert "MULTI_STATEMENT_BLOCKED" in result.error_trail[0]
-    assert result.execution_result is not None
-    assert len(result.execution_result.rows) == 1
+    assert result.execution_result is None
+    assert result.ast_validation is not None
+    assert result.ast_validation.violated_rule == "MULTI_STATEMENT_BLOCKED"
+
+
+def test_prompt_injection_hard_stop(
+    db_tools: tuple[SQLiteExecutor, SQLiteSchemaInspector],
+) -> None:
+    """Verify prompt-level injection screening blocks BEFORE any LLM call."""
+    executor, inspector = db_tools
+    mock_gateway = MockLLMGateway(responses=[])
+
+    orchestrator = CircuitOrchestrationEngine(
+        gateway=mock_gateway,  # type: ignore[arg-type]
+        db_executor=executor,
+        schema_inspector=inspector,
+    )
+
+    request = QueryRequest(query="Show all artists; DROP TABLE Album;--")
+    result = orchestrator.execute_circuit(request)
+
+    # Prompt guard fires pre-generation: zero LLM attempts consumed
+    assert mock_gateway.call_count == 0
+    assert result.success is False
+    assert result.attempts_used == 0
+    assert len(result.error_trail) == 1
+    assert "Prompt Guard Blocked" in result.error_trail[0]
+    assert result.execution_result is None
+    assert result.ast_validation is None
 
 
 def test_db_syntax_error_recovery(

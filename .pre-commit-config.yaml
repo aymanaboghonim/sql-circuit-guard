@@ -57,6 +57,7 @@ repos:
           - pydantic>=2.10.0
           - pydantic-settings>=2.7.0
           - sqlglot>=25.0.0
+          - langfuse==4.14.2
           - httpx
         args: [--strict, --config-file=pyproject.toml]
         files: ^src/

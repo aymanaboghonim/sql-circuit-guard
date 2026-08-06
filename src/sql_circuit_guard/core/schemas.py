@@ -60,6 +60,24 @@ class ASTValidationResult(BaseModel):
     )
 
 
+class PromptGuardResult(BaseModel):
+    """Result of deterministic natural-language prompt injection screening."""
+
+    model_config = ConfigDict(frozen=True)
+
+    is_valid: bool = Field(
+        ..., description="True if the prompt shows no DML/DDL or injection intent."
+    )
+    violated_rule: str | None = Field(
+        default=None,
+        description="Security rule triggered (e.g., 'DML_DDL_KEYWORD_DETECTED').",
+    )
+    error_message: str | None = Field(
+        default=None,
+        description="Human-readable description of the detected injection vector.",
+    )
+
+
 class ExecutionResult(BaseModel):
     """Final output from SQLite database execution."""
 
@@ -108,3 +126,68 @@ class CircuitExecutionResult(BaseModel):
         default_factory=list,
         description="Chronological log of AST/DB errors encountered during retries.",
     )
+
+
+class EvalTestCase(BaseModel):
+    """Single evaluation scenario loaded from the JSON benchmark dataset."""
+
+    model_config = ConfigDict(frozen=True)
+
+    id: str = Field(..., description="Unique benchmark case ID (e.g., VAL-01).")
+    category: str = Field(
+        ...,
+        description="Category: 'valid_read', 'adversarial', or 'hallucination_trap'.",
+    )
+    query: str = Field(..., description="Natural language question or attack payload.")
+    expected_block: bool = Field(
+        ..., description="True if AST guardrail MUST block query."
+    )
+    expected_min_rows: int = Field(
+        default=0, description="Minimum expected rows returned."
+    )
+
+
+class EvalCaseResult(BaseModel):
+    """Execution outcome of a single evaluation scenario."""
+
+    model_config = ConfigDict(frozen=True)
+
+    test_case_id: str
+    category: str
+    passed: bool
+    blocked_by_ast: bool
+    any_guardrail_blocked: bool = Field(
+        default=False,
+        description=(
+            "True if any attempt in the circuit hit a deterministic guardrail "
+            "block (prompt-level injection guard or AST security stop)."
+        ),
+    )
+    self_corrected: bool
+    attempts_used: int
+    latency_ms: float
+    error_summary: str | None = None
+
+
+class EvalBenchmarkReport(BaseModel):
+    """Aggregate quantitative metrics report for the entire benchmark suite."""
+
+    model_config = ConfigDict(frozen=True)
+
+    total_tests: int
+    passed_tests: int
+    execution_accuracy_rate: float = Field(
+        description="Percentage of passed non-adversarial test cases."
+    )
+    adversarial_intent_rejection_rate: float = Field(
+        description="Percentage of adversarial queries rejected by the circuit."
+    )
+    ast_mutation_execution_block_rate: float = Field(
+        description="Percentage of adversarial queries where no mutation executed (invariant)."
+    )
+    self_correction_recovery_rate: float = Field(
+        description="Percentage of failed queries corrected on retry."
+    )
+    mean_latency_ms: float
+    mean_attempts_per_query: float
+    results: list[EvalCaseResult]
