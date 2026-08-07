@@ -290,8 +290,9 @@ if __name__ == "__main__":
     app = create_ui()
     app.launch(
         server_name="0.0.0.0",
-        server_port=7860,
-        # Share links are opt-in (GRADIO_SHARE=true); HF Spaces provides its own
-        # public tunnel and must not spawn a gradio share session.
+        # PaaS platforms (Render, etc.) inject PORT; fall back to the default 7860.
+        server_port=int(os.getenv("PORT", "7860")),
+        # Share links are opt-in (GRADIO_SHARE=true); hosted platforms provide
+        # their own public URL and must not spawn a gradio share session.
         share=os.getenv("GRADIO_SHARE", "false").lower() == "true",
     )

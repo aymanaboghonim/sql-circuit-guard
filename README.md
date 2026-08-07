@@ -132,11 +132,20 @@ docker compose up --build -d
 
 Langfuse is provisioned automatically with the project keys (`pk/sk-lf-sql-circuit-guard`) via `LANGFUSE_INIT_*` environment variables; log in with the user defined by `LANGFUSE_INIT_USER_EMAIL` / `LANGFUSE_INIT_USER_PASSWORD` (defaults in `docker-compose.yml`).
 
-### Hugging Face Spaces (CPU, cloud-only)
+### Cloud Demo Deployment (Render — free web service)
 
-[`Dockerfile.hf`](Dockerfile.hf) is the CPU-tier deployment config for Hugging Face Spaces. It runs **cloud-only**: both `LOCAL_MODEL_NAME` and `CLOUD_MODEL_NAME` point at Gemini (`gemini/gemini-3.1-flash-lite`), all traffic passes through the token-bucket rate limiter (10 RPM / 200k TPM), Langfuse is off by default (`ENABLE_LANGFUSE=false`), and the container runs as UID 1000 with the database baked in.
+The app deploys as a Docker web service on Render's free tier (512 MB / 0.1 CPU, spins down after 15 min idle, ~1 min cold start). It runs **cloud-only** — both `LOCAL_MODEL_NAME` and `CLOUD_MODEL_NAME` point at Gemini, all traffic passes through the token-bucket rate limiter (10 RPM / 200k TPM), and Langfuse is off by default.
 
-Configure the Space with `sdk: docker` and `app_port: 7860`, then add `GEMINI_API_KEY` as a **Space secret** (Settings → Secrets) — it is read at runtime, never baked into the image. No Ollama/GPU is required. Local validation: `docker build -f Dockerfile.hf -t sql-circuit-guard:hf .`
+Required environment variables (set in the Render service dashboard):
+
+| Variable | Value |
+| :--- | :--- |
+| `GEMINI_API_KEY` | Gemini AI Studio API key (secret) |
+| `LOCAL_MODEL_NAME` / `CLOUD_MODEL_NAME` | `gemini/gemini-3.1-flash-lite` |
+| `ENABLE_CLOUD_FALLBACK` | `true` |
+| `ENABLE_LANGFUSE` | `false` |
+
+The app reads `PORT` (Render injects it) with a 7860 fallback. No Ollama/GPU required.
 
 ---
 

@@ -204,6 +204,6 @@ Deploying natural language to SQL interfaces in production environments introduc
 
 1. **GitHub Pages Documentation Site:**
    * Deploy static documentation site containing architecture diagrams, component specifications, and exported Langfuse trace visualizers.
-2. **Hugging Face Spaces Cloud Hosting:**
-   * Deploy `app.py` to Hugging Face Spaces (Free CPU Tier).
+2. **Render Cloud Hosting (Free Web Service):**
+   * Deploy `app.py` as a free Render web service (Docker runtime, cloud-only Gemini, rate-limited).
    * Configure environment variables to direct model requests through cloud APIs (e.g. `gemini-3.1-flash-lite`) with active rate-limiters.
