@@ -239,14 +239,17 @@ def create_ui() -> gr.Blocks:
                         error_trail_display = gr.Markdown()
 
                 # Wire example buttons
-                ex1.click(
+                # mypy's cold cache cannot resolve gradio 6.22.0 stub instance
+                # methods (see button.pyi); unused-ignore is disabled in
+                # pyproject.toml so these suppression comments are safe everywhere.
+                ex1.click(  # type: ignore[attr-defined]
                     lambda: "Show me the top 5 artists by total album count.",
                     outputs=query_input,
                 )
-                ex2.click(
+                ex2.click(  # type: ignore[attr-defined]
                     lambda: "Show top 10 invoices by total amount.", outputs=query_input
                 )
-                ex3.click(
+                ex3.click(  # type: ignore[attr-defined]
                     lambda: "Count how many tracks exist for each genre.",
                     outputs=query_input,
                 )
@@ -257,10 +260,12 @@ def create_ui() -> gr.Blocks:
                 )
                 schema_markdown = gr.Markdown(get_schema_summary())
                 refresh_schema_btn = gr.Button("🔄 Refresh Schema Info", size="sm")
-                refresh_schema_btn.click(fn=get_schema_summary, outputs=schema_markdown)
+                refresh_schema_btn.click(  # type: ignore[attr-defined]
+                    fn=get_schema_summary, outputs=schema_markdown
+                )
 
         # Wire event handlers
-        submit_btn.click(
+        submit_btn.click(  # type: ignore[attr-defined]
             fn=run_query_circuit,
             inputs=[query_input, retry_slider, langfuse_toggle],
             outputs=[
