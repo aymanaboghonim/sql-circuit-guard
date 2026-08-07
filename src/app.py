@@ -175,9 +175,8 @@ def create_ui() -> gr.Blocks:
     }
     """
 
-    with gr.Blocks(
-        title="SQL-Circuit-Guard | Secure Text-to-SQL", css=custom_css
-    ) as demo:
+    demo = gr.Blocks(title="SQL-Circuit-Guard | Secure Text-to-SQL", css=custom_css)
+    with demo:
         with gr.Row(elem_classes="header-box"):
             gr.Markdown(
                 "# 🛡️ SQL-Circuit-Guard\n"

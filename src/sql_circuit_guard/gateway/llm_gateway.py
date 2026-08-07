@@ -96,7 +96,6 @@ class LiteLLMGateway:
             model=model_name,
             messages=formatted_messages,
             response_model=SQLGenerationOutput,
-            temperature=0.0,
             max_tokens=1024,
         )
         return response

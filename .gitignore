@@ -15,7 +15,7 @@ build/
 # Databases & local state
 *.db
 *.sqlite3
-data/chinook.db
+!data/chinook.db
 data/cache/
 
 # Testing & Coverage

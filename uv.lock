@@ -2349,13 +2349,17 @@ dependencies = [
     { name = "instructor" },
     { name = "langfuse" },
     { name = "litellm" },
-    { name = "mypy" },
     { name = "pandas" },
-    { name = "playwright" },
     { name = "pydantic" },
+    { name = "sqlglot" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "mypy" },
+    { name = "playwright" },
     { name = "pytest" },
     { name = "ruff" },
-    { name = "sqlglot" },
 ]
 
 [package.metadata]
@@ -2364,13 +2368,17 @@ requires-dist = [
     { name = "instructor", specifier = ">=1.15.4" },
     { name = "langfuse", specifier = ">=4.14.2" },
     { name = "litellm", specifier = ">=1.95.0" },
-    { name = "mypy", specifier = ">=2.3.0" },
     { name = "pandas", specifier = ">=2.0.0" },
-    { name = "playwright", specifier = ">=1.40.0" },
     { name = "pydantic", specifier = ">=2.13.4" },
+    { name = "sqlglot", specifier = ">=30.14.0" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "mypy", specifier = ">=2.3.0" },
+    { name = "playwright", specifier = ">=1.40.0" },
     { name = "pytest", specifier = ">=9.1.1" },
     { name = "ruff", specifier = ">=0.16.1" },
-    { name = "sqlglot", specifier = ">=30.14.0" },
 ]
 
 [[package]]
