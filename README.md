@@ -132,6 +132,12 @@ docker compose up --build -d
 
 Langfuse is provisioned automatically with the project keys (`pk/sk-lf-sql-circuit-guard`) via `LANGFUSE_INIT_*` environment variables; log in with the user defined by `LANGFUSE_INIT_USER_EMAIL` / `LANGFUSE_INIT_USER_PASSWORD` (defaults in `docker-compose.yml`).
 
+### Hugging Face Spaces (CPU, cloud-only)
+
+[`Dockerfile.hf`](Dockerfile.hf) is the CPU-tier deployment config for Hugging Face Spaces. It runs **cloud-only**: both `LOCAL_MODEL_NAME` and `CLOUD_MODEL_NAME` point at Gemini (`gemini/gemini-3.1-flash-lite`), all traffic passes through the token-bucket rate limiter (10 RPM / 200k TPM), Langfuse is off by default (`ENABLE_LANGFUSE=false`), and the container runs as UID 1000 with the database baked in.
+
+Configure the Space with `sdk: docker` and `app_port: 7860`, then add `GEMINI_API_KEY` as a **Space secret** (Settings → Secrets) — it is read at runtime, never baked into the image. No Ollama/GPU is required. Local validation: `docker build -f Dockerfile.hf -t sql-circuit-guard:hf .`
+
 ---
 
 ## Running Tests

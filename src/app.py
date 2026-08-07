@@ -22,8 +22,12 @@ logger = logging.getLogger("sql_circuit_guard")
 load_dotenv()
 
 
-def build_orchestrator(enable_langfuse: bool = True) -> CircuitOrchestrationEngine:
+def build_orchestrator(
+    enable_langfuse: bool | None = None,
+) -> CircuitOrchestrationEngine:
     """Initialize core dependencies and construct the circuit orchestrator."""
+    if enable_langfuse is None:
+        enable_langfuse = os.getenv("ENABLE_LANGFUSE", "true").lower() == "true"
     init_telemetry(enable_langfuse=enable_langfuse)
 
     db_path = Path("data/chinook.db")
@@ -212,7 +216,9 @@ def create_ui() -> gr.Blocks:
                             label="Max Self-Correction Retries",
                         )
                         langfuse_toggle = gr.Checkbox(
-                            label="Enable Langfuse Tracing", value=True
+                            label="Enable Langfuse Tracing",
+                            value=os.getenv("ENABLE_LANGFUSE", "true").lower()
+                            == "true",
                         )
                         submit_btn = gr.Button(
                             "⚡ Execute Circuit", variant="primary", size="lg"
@@ -282,4 +288,10 @@ def create_ui() -> gr.Blocks:
 
 if __name__ == "__main__":
     app = create_ui()
-    app.launch(server_name="0.0.0.0", server_port=7860, share=True)
+    app.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        # Share links are opt-in (GRADIO_SHARE=true); HF Spaces provides its own
+        # public tunnel and must not spawn a gradio share session.
+        share=os.getenv("GRADIO_SHARE", "false").lower() == "true",
+    )
