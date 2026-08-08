@@ -96,8 +96,7 @@ Latency note: the mean is skewed by one reproducible model-inference stall (VAL-
 
 | Gate | Command |
 | :--- | :--- |
-| Lint + format | `uv run ruff check src/ tests/` · `uv run ruff format --check src/ tests/` |
-| Static typing (strict) | `uv run mypy src/` |
-| Tests | `uv run pytest tests/ -v` |
-| Pre-commit (ruff, mypy, gitleaks, actionlint) | `uv run pre-commit run --all-files` |
+| Lint + format | `make format` · `make lint` |
+| Tests | `make test` |
+| Pre-commit (ruff, mypy, gitleaks, actionlint) | `make lint` |
 | CI (on push/PR) | `.github/workflows/ci.yml` |

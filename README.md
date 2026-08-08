@@ -72,6 +72,21 @@ Snapshot: `2026-08-06` · model `ibm/granite4.1:8b` (Ollama, local) · commit `d
 
 > The Chinook database (`data/chinook.db`) is committed to the repository, so no download step is required.
 
+### Makefile
+
+Common workflows are available as standard targets:
+
+```bash
+make install   # sync deps + pre-commit hooks
+make lint      # mypy (strict) + full pre-commit pipeline
+make test      # pytest suite (unit, guardrail, resilience)
+make eval      # 20-case evaluation benchmark suite
+make up        # full Docker Compose stack (Gradio, Ollama, Langfuse)
+make logs      # tail application logs
+make profile   # GPU memory + throughput profiler (needs Ollama running)
+make clean     # remove local caches (keeps data/ and reports/)
+```
+
 ## Architecture & Security Model
 
 ```mermaid
