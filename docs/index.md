@@ -9,6 +9,7 @@ Deterministic, self-correcting read-only Text-to-SQL with `sqlglot` AST guardrai
 
 - Source: [github.com/aymanaboghonim/sql-circuit-guard](https://github.com/aymanaboghonim/sql-circuit-guard)
 - Benchmark artifacts: [`reports/benchmark_report.json`](https://github.com/aymanaboghonim/sql-circuit-guard/blob/main/reports/benchmark_report.json) · [`reports/benchmark_report.md`](https://github.com/aymanaboghonim/sql-circuit-guard/blob/main/reports/benchmark_report.md)
+- Operations: [`docs/RUNBOOK.md`](https://github.com/aymanaboghonim/sql-circuit-guard/blob/main/docs/RUNBOOK.md)
 
 <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 <script>

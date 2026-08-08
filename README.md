@@ -8,6 +8,7 @@
 
 - Architecture & benchmarks: [GitHub Pages](https://aymanaboghonim.github.io/sql-circuit-guard/)
 - Benchmark artifacts: [reports/benchmark_report.json](reports/benchmark_report.json) · [reports/benchmark_report.md](reports/benchmark_report.md)
+- Operations & troubleshooting: [docs/RUNBOOK.md](docs/RUNBOOK.md)
 
 ## Demo
 
@@ -128,6 +129,15 @@ Only soft failures (execution errors such as a hallucinated column) enter the se
 Run the test suite via `pytest`:
 ```bash
 uv run pytest tests/ -v
+```
+
+This includes the resilience suite (`tests/test_resilience.py`) — gateway failure modes, concurrent read-only connections, and guardrail rejection of injection/PRAGMA payloads.
+
+### GPU Profiling
+
+Measure VRAM usage and local inference throughput (requires a running Ollama):
+```bash
+./scripts/profile_gpu.sh
 ```
 
 ### Evaluation Suite
