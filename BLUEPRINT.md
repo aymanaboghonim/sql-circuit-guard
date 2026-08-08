@@ -199,11 +199,10 @@ Deploying natural language to SQL interfaces in production environments introduc
 
 ---
 
-### Phase 6: Static Documentation & Cloud Demo Deployment
-**Goal:** Publish system artifacts and hosted interactive interface.
+### Phase 6: Static Documentation & CI
+**Goal:** Publish system artifacts and enforce quality gates.
 
 1. **GitHub Pages Documentation Site:**
    * Deploy static documentation site containing architecture diagrams, component specifications, and exported Langfuse trace visualizers.
-2. **Render Cloud Hosting (Free Web Service):**
-   * Deploy `app.py` as a free Render web service (Docker runtime, cloud-only Gemini, rate-limited).
-   * Configure environment variables to direct model requests through cloud APIs (e.g. `gemini-3.1-flash-lite`) with active rate-limiters.
+2. **Continuous Integration:**
+   * Enforce `ruff`, `mypy`, and `pytest` via GitHub Actions on every push and pull request.

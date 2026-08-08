@@ -290,9 +290,7 @@ if __name__ == "__main__":
     app = create_ui()
     app.launch(
         server_name="0.0.0.0",
-        # PaaS platforms (Render, etc.) inject PORT; fall back to the default 7860.
-        server_port=int(os.getenv("PORT", "7860")),
-        # Share links are opt-in (GRADIO_SHARE=true); hosted platforms provide
-        # their own public URL and must not spawn a gradio share session.
+        server_port=7860,
+        # Share links are opt-in (GRADIO_SHARE=true) for public demo access.
         share=os.getenv("GRADIO_SHARE", "false").lower() == "true",
     )
