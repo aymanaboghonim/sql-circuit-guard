@@ -35,8 +35,8 @@ Deploying natural language to SQL interfaces in production environments introduc
 * **LLM Abstraction & Schema Parsing:** `LiteLLM` + `Pydantic v2` + `Instructor`
 * **AST Parser & Guardrail:** `sqlglot`
 * **Relational Engine:** `SQLite3` (Chinook Sample Database)
-* **Observability & Tracing:** Self-hosted `Langfuse` or `Arize Phoenix` via OpenTelemetry
-* **UI/Service Layer:** `FastAPI` + `Gradio`
+* **Observability & Tracing:** Self-hosted `Langfuse` v4 via OpenTelemetry
+* **UI/Service Layer:** `Gradio`
 * **Containerization:** `Docker` & `Docker Compose`
 
 ---
@@ -51,8 +51,8 @@ Deploying natural language to SQL interfaces in production environments introduc
          ▼
 ┌────────────────────────────────────────────────────────┐
 │               LLM Gateway (LiteLLM)                    │
-│ Primary: Local Ollama (Qwen 2.5 7B)                    │
-│ Fallback: Rate-Limited Cloud API (e.g., `gemini-3.1-flash-lite` - 10 RPM / 200k TPM / 400 RPD)   │
+│ Primary: Local Ollama (ibm/granite4.1:8b)                │
+│ Fallback: Rate-Limited Cloud API (e.g., `gemini-3.1-flash-lite` - 10 RPM / 200k TPM)   │
 └────────┬───────────────────────────────────────────────┘
          │ (Generates SQL String)
          ▼
@@ -120,7 +120,6 @@ Deploying natural language to SQL interfaces in production environments introduc
    │   └── app.py              # Gradio / API entrypoint
    ├── tests/                  # Unit, Integration, and Guardrail tests
    ├── data/                   # Chinook SQLite database
-   ├── docker/                 # Container configs
    ├── docker-compose.yml
    ├── pyproject.toml
    └── README.md
