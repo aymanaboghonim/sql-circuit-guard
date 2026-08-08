@@ -1,8 +1,13 @@
-# SQL Circuit Guard
+# SQL-Circuit-Guard
 
 `sql-circuit-guard` is a read-only Text-to-SQL system for relational databases (SQLite Chinook). Natural-language questions are converted to SQL by a local LLM (`ibm/granite4.1:8b` via Ollama) with rate-limited cloud fallback, validated by two deterministic guardrails before any execution, and wrapped in a bounded self-correction loop. Every step is traced with OpenTelemetry / Langfuse.
 
 [![CI Quality Pipeline](https://github.com/aymanaboghonim/sql-circuit-guard/actions/workflows/ci.yml/badge.svg)](https://github.com/aymanaboghonim/sql-circuit-guard/actions/workflows/ci.yml)
+
+## Documentation
+
+- Architecture & benchmarks: [GitHub Pages](https://aymanaboghonim.github.io/sql-circuit-guard/)
+- Benchmark artifacts: [reports/benchmark_report.json](reports/benchmark_report.json) · [reports/benchmark_report.md](reports/benchmark_report.md)
 
 ## Demo
 
@@ -180,16 +185,6 @@ Snapshot: `2026-08-06` · model `ibm/granite4.1:8b` (Ollama, local) · commit `d
 | **Mean Generation Attempts** | `0.75` | `≤ 1.5` |
 
 > **Latency note:** the mean is skewed by one reproducible model-inference stall (VAL-02, ~59s); the remaining 19 cases average ~2.4s. Full per-case logs: [reports/benchmark_report.md](reports/benchmark_report.md).
-
-### Quality Gates
-
-Every change is validated by the production pre-commit pipeline plus strict static typing:
-
-```bash
-uv run pre-commit run --all-files   # ruff lint/format, mypy --strict, gitleaks, check-json, actionlint
-uv run mypy src/                    # strict static typing
-uv run pytest tests/ -v             # full unit + integration suite (51 tests)
-```
 
 ---
 
